@@ -1,4 +1,18 @@
 var issueContainerEl = document.querySelector("#issues-container");
+var limitWarningEl = document.querySelector("#limit-warning");
+
+var displayWarning = function(repo) {
+    //add text to warning container
+    limitWarningEl.textContent = "To see more than 30 issues, ";
+    var linkEl = document.createElement("a");
+    linkEl.textContent = "click here to find them on Github.com";
+    linkEl.setAttribute("href", "https://github.com/" + repo + "/issues");
+    linkEl.setAttribute("target", "_blank");
+
+    //append to warning container
+    limitWarningEl.appendChild(linkEl);
+};
+
 
 var getRepoIssues = function(repo) {
     var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
@@ -8,6 +22,10 @@ var getRepoIssues = function(repo) {
         if (response.ok) {
             response.json().then(function(data) {
                 displayIssues(data);
+                //check api for extra paginated issues
+                if (response.headers.get("Link")) {
+                    displayWarning(repo);
+                }
             });
         } else {
             alert("There was a problem with your request!")
@@ -16,6 +34,11 @@ var getRepoIssues = function(repo) {
 };
 
 var displayIssues = function(issues) {
+    if (issues.length === 0) {
+        issueContainerEl.textContent = "This repo has no open issues!";
+        return;
+    }
+
     for (var i = 0; i < issues.length; i++) {
         var issueEl = document.createElement("a");
         issueEl.classList = "list-item flex-row justify-space-between alig-center";
@@ -46,4 +69,4 @@ var displayIssues = function(issues) {
     }
 }
 
-getRepoIssues("becketbowes/git-it-done");
+getRepoIssues("facebook/react");
